@@ -23,28 +23,32 @@ let authCache; // holds auth client after the first time server authenticates
 // Make sure you place your service account credentials in a credentials.json file
 // in the /server directory. This file is ignored by git.
 async function authorize(req, res, next) {
-	if (authCache) {
-		console.log('cached authclient in res.locals.auth');
-		res.locals.auth = authCache;
-		return next();
-	}
-	console.log('Starting ADC authorization...');
-	try {
-		console.log('creating auth...');
-		const auth = new GoogleAuth({
-			scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-		});
-		console.log('auth created. creating auth client...');
-		const authClient = await auth.getClient();
-		console.log('auth client created. Storing in res.locals.auth');
-		res.locals.auth = authClient;
-		authCache = authClient;
-		return next();
-	} catch (err) {
-		err.log =
-			'Unable to authorize with Application Default Credentials. Check credentials.json, and verify correct permissions in google cloud console.';
-		return next(err);
-	}
+  if (authCache) {
+    console.log('cached authclient in res.locals.auth');
+    res.locals.auth = authCache;
+    return next();
+  }
+  console.log('Starting ADC authorization...');
+  try {
+    console.log('creating auth...');
+    const auth = new GoogleAuth({
+      scopes: [
+        'https://www.googleapis.com/auth/spreadsheets',
+        'https://www.googleapis.com/auth/drive',
+        'https://www.googleapis.com/auth/drive.file',
+      ],
+    });
+    console.log('auth created. creating auth client...');
+    const authClient = await auth.getClient();
+    console.log('auth client created. Storing in res.locals.auth');
+    res.locals.auth = authClient;
+    authCache = authClient;
+    return next();
+  } catch (err) {
+    err.log =
+      'Unable to authorize with Application Default Credentials. Check credentials.json, and verify correct permissions in google cloud console.';
+    return next(err);
+  }
 }
 
 //HANDLE parsing incoming requests to JSON
